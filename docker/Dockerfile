@@ -2,7 +2,7 @@ ARG PHP_VERSION
 FROM php:${PHP_VERSION}
 
 ## Diretório da aplicação
-ARG APP_DIR=/var/www/app
+ARG APP_DIR=/var/www/application.com.br
 
 ## Versão da Lib do Redis para PHP
 ARG REDIS_LIB_VERSION=5.3.7
