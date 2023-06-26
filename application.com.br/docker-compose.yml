@@ -11,38 +11,28 @@ services:
       args:
         PHP_VERSION: '8.2.7-fpm-bullseye'
     volumes:
-      - ./sendpro.com.br:/var/www/sendpro.com.br
+      - ./app:/var/www/sendpro.com.br
   #MYSQL
   sendpro_db:
-    image: ${DB_IMAGE_1}
-    container_name: ${DB_CONTAINER_NAME_1}
+    image: ${DB_IMAGE_SENDPRO}
+    container_name: ${DB_CONTAINER_NAME_SENDPRO}
     restart: always
     ports:
-      - ${DB_PORT_1}:3306
+      - ${DB_PORT_SENDPRO}:3306
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE_1}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD_ROOT_1}
-      MYSQL_PASSWORD: ${DB_PASSWORD_1}
-      MYSQL_USER: ${DB_USERNAME_1}
+      MYSQL_DATABASE: ${DB_DATABASE_SENDPRO}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD_ROOT_SENDPRO}
+      MYSQL_PASSWORD: ${DB_PASSWORD_SENDPRO}
+      MYSQL_USER: ${DB_USERNAME_SENDPRO}
     volumes:
-      - ./${DB_CONTAINER_NAME_1}/mysql-data:/var/lib/mysql
-  #PHPMYADMIN
-  phpmyadmin_1:
-    image: ${PHPMYADMIN_IMAGE_1}
-    container_name: ${PHPMYADMIN_CONTAINER_NAME_1}
-    restart: always
-    environment:
-      - PMA_HOST=application-db
-      - MYSQL_ROOT_PASSWORD=${PHPMYADMIN_ROOT_PASSWORD_1}
-    ports:
-      - ${PHPMYADMIN_PORT_1}:80
+      - ./mysql-data:/var/lib/mysql
   #REDIS
-  redis_1:
-    image: ${REDIS_IMAGE_1}
-    container_name: ${REDIS_CONTAINER_NAME_1}
-    command: redis-server --save 20 1 --loglevel warning --appendonly yes --replica-read-only no --requirepass ${REDIS_PASSWORD_1}
+  sendpro_redis:
+    image: ${REDIS_IMAGE_SENDPRO}
+    container_name: ${REDIS_CONTAINER_NAME_SENDPRO}
+    command: redis-server --save 20 1 --loglevel warning --appendonly yes --replica-read-only no --requirepass ${REDIS_PASSWORD_SENDPRO}
     volumes:
-        - ./app/redis/data:/data
+        - ./redis/data:/data
     restart: always
     ports:
-      - ${REDIS_PORT_1}:6379
+      - ${REDIS_PORT_SENDPRO}:6379
