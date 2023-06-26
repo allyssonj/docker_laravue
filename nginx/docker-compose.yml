@@ -5,6 +5,9 @@ services:
     image: nginx:latest
     container_name: nginx
     restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     volumes:
       - ./conf/:/etc/nginx/conf.d/:ro
       - ./logs:/var/log/nginx
