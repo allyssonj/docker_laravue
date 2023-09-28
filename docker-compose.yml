@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  #APP
+  web:
+    image: urnau/app1-php:prod-nginx-php-fpm8.2.3
+    container_name: web
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        PHP_VERSION: '8.2.4-fpm-bullseye'
+    volumes:
+      - ./app:/var/www/app
+    ports:
+      - "80:80" #http
+      - "443:443" #https
+  #MYSQL
+  db:
+    image: mysql:8.0
+    container_name: application-db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    volumes:
+      - ./app/mysql-data:/var/lib/mysql
+  #PHPMYADMIN
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      - PMA_HOST=application-db
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "8095:80"
+  #REDIS
+  redis:
+    image: redis:6.2-alpine
+    container_name: application-redis
+    command: redis-server --save 20 1 --loglevel warning --appendonly yes --replica-read-only no --requirepass ${REDIS_PASSWORD}
+    volumes:
+        - ./app/redis/data:/data
+    restart: always
+    ports:
+      - "6379:6379"

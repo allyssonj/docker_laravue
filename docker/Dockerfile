@@ -1,9 +1,11 @@
 ARG PHP_VERSION
-ARG APPLICATION_NAME=application.com.br
-ARG APP_DIR=/var/www/${APPLICATION_NAME}
-ARG REDIS_LIB_VERSION=5.3.7
-
 FROM php:${PHP_VERSION}
+
+## Diretório da aplicação
+ARG APP_DIR=/var/www/app
+
+## Versão da Lib do Redis para PHP
+ARG REDIS_LIB_VERSION=5.3.7
 
 ### apt-utils é um extensão de recursos do gerenciador de pacotes APT
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
@@ -32,6 +34,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 COPY ./docker/supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY ./docker/supervisord/supervisord.conf /etc/supervisord.d/
+### Supervisor permite monitorar e controlar vários processos (LINUX)
+### Bastante utilizado para manter processos em Daemon, ou seja, executando em segundo plano
 
 COPY ./docker/php/extra-php.ini "$PHP_INI_DIR/99_extra.ini"
 COPY ./docker/php/extra-php-fpm.conf /etc/php8/php-fpm.d/www.conf
@@ -40,15 +44,23 @@ WORKDIR $APP_DIR
 RUN cd $APP_DIR
 RUN chown www-data:www-data $APP_DIR
 
-COPY --chown=www-data:www-data ./${APPLICATION_NAME}/app .
+COPY --chown=www-data:www-data ./app .
 RUN rm -rf vendor
 RUN composer install --no-interaction
 RUN php artisan storage:link && php artisan key:generate --no-interaction
+
 
 # Instalar o Node.js 18
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get update && apt-get install -y nodejs
 
+
+RUN apt-get install nginx -y
+RUN rm -rf /etc/nginx/sites-enabled/* && rm -rf /etc/nginx/sites-available/*
+COPY ./docker/nginx/sites.conf /etc/nginx/sites-enabled/default.conf
+COPY ./docker/nginx/error.html /var/www/app/error.html
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# RUN apt update -y && apt install nano git -y
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
