@@ -17,8 +17,8 @@ services:
       - "443:443" #https
   #MYSQL
   db:
-    image: mysql:8.0
-    container_name: application-db
+    image: mysql:latest
+    container_name: sendpro-db
     restart: always
     ports:
       - "3306:3306"
@@ -42,7 +42,7 @@ services:
   #REDIS
   redis:
     image: redis:6.2-alpine
-    container_name: application-redis
+    container_name: sendpro-redis
     command: redis-server --save 20 1 --loglevel warning --appendonly yes --replica-read-only no --requirepass ${REDIS_PASSWORD}
     volumes:
         - ./app/redis/data:/data
